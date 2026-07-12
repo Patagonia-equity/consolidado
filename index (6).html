@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Venta y Gastos</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;background:#f8f7f4;color:#1a1a18;padding:1rem 1rem 3rem}
+.wrap{max-width:900px;margin:0 auto}
+.hdr{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:1rem;padding-bottom:0.8rem;border-bottom:1px solid #d3d1c7}
+h1{font-size:15px;font-weight:600;letter-spacing:-.2px}
+.sub{font-size:11px;color:#888780;margin-top:2px}
+.logo-box{width:80px;height:38px;border:1.5px dashed #b4b2a9;border-radius:5px;display:flex;align-items:center;justify-content:center;background:#fff;position:relative;overflow:hidden;cursor:pointer}
+.logo-box:hover{background:#f1efe8}
+#logoImg{width:100%;height:100%;object-fit:contain;display:none}
+.lhint{font-size:9px;color:#888780;pointer-events:none;text-align:center;line-height:1.4}
+.logo-box input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+#lremove{font-size:10px;color:#888780;cursor:pointer;display:none}
+#empNombre{font-size:13px;font-weight:600;border:none;border-bottom:1px solid #d3d1c7;background:transparent;outline:none;width:220px;padding:2px 0;color:#1a1a18}
+#empNombre::placeholder{color:#b4b2a9;font-weight:400}
+.tabs{display:flex;gap:0;margin-bottom:1rem;background:#f1efe8;border-radius:8px;padding:3px}
+.tab{flex:1;padding:5px 8px;font-size:12px;font-weight:500;border-radius:5px;border:none;background:transparent;color:#5f5e5a;cursor:pointer;font-family:inherit;transition:background .15s;text-align:center}
+.tab.active{background:#fff;color:#1a1a18;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.panel{display:none}.panel.active{display:block}
+.subtabs{display:flex;gap:0;margin-bottom:10px;background:#fff;border:1px solid #d3d1c7;border-radius:7px;padding:3px}
+.subtab{flex:1;padding:5px 8px;font-size:11px;font-weight:500;border-radius:5px;border:none;background:transparent;color:#5f5e5a;cursor:pointer;font-family:inherit;text-align:center}
+.subtab.active{background:#1a1a18;color:#f8f7f4}
+.subpanel{display:none}.subpanel.active{display:block}
+.diff-pos{color:#A32D2D}
+.diff-neg{color:#27500A}
+.rubro-mode-btn{font-size:8px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;border-radius:4px;border:1px solid #d3d1c7;background:#fff;color:#888780;padding:1px 5px;cursor:pointer;font-family:inherit;flex-shrink:0}
+.rubro-mode-btn.manual{background:#A32D2D;border-color:#A32D2D;color:#fff}
+.mes-table td.lft-gproj{display:flex;align-items:center;gap:5px;text-align:left;color:#5f5e5a;font-size:10px;max-width:150px;white-space:normal;line-height:1.25}
+.mes-table th.lft-gproj{text-align:left;min-width:150px}
+.prod-list{display:flex;flex-direction:column;gap:10px;margin-bottom:10px}
+.prod-card{background:#fff;border:1px solid #d3d1c7;border-radius:10px;overflow:hidden}
+.prod-card-hd{display:flex;align-items:center;gap:8px;padding:9px 12px;background:#f8f7f4;border-bottom:1px solid #f1efe8;cursor:pointer;user-select:none}
+.prod-num{font-size:10px;font-weight:700;background:#1a1a18;color:#f8f7f4;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.prod-name-inp{flex:1;font-size:12px;font-weight:600;border:none;background:transparent;outline:none;color:#1a1a18;min-width:0}
+.prod-name-inp::placeholder{color:#b4b2a9;font-weight:400}
+.prod-pf{font-size:12px;font-weight:700;color:#27500A;min-width:90px;text-align:right;white-space:nowrap}
+.prod-arr{font-size:10px;color:#b4b2a9;transition:transform .2s;flex-shrink:0}
+.prod-arr.open{transform:rotate(180deg)}
+.prod-del{font-size:11px;color:#A32D2D;border:1px solid #f0c0c0;background:#fff;border-radius:4px;padding:2px 7px;cursor:pointer;flex-shrink:0}
+.prod-del:hover{background:#FCEBEB}
+.prod-body{display:none;padding:10px 12px}
+.prod-body.open{display:block}
+.acord{border:1px solid #d3d1c7;border-radius:8px;margin-bottom:5px;background:#fff;overflow:hidden}
+.acord-hd{display:flex;align-items:center;gap:8px;padding:7px 10px;cursor:pointer;user-select:none;min-height:34px}
+.acord-hd:hover{background:#f8f7f4}
+.acord-badge{font-size:9px;font-weight:600;padding:2px 7px;border-radius:10px;flex-shrink:0;text-transform:uppercase;letter-spacing:.3px}
+.bp{background:#E6F1FB;color:#0C447C}.bm{background:#EAF3DE;color:#27500A}.bg{background:#FAEEDA;color:#633806}.bi{background:#EEEDFE;color:#3C3489}.bt{background:#E1F5EE;color:#085041}
+.acord-title{flex:1;font-size:11px;font-weight:500;color:#1a1a18}
+.acord-tot{font-size:11px;font-weight:600;min-width:75px;text-align:right;color:#888780}
+.acord-arr{font-size:10px;color:#b4b2a9;transition:transform .2s;flex-shrink:0;margin-left:4px}
+.acord-arr.open{transform:rotate(180deg)}
+.acord-body{display:none;border-top:1px solid #f1efe8;padding:8px 10px 10px}
+.acord-body.open{display:block}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:5px 10px;margin-bottom:2px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px 8px;margin-bottom:2px}
+.fcell{display:flex;flex-direction:column;gap:2px}
+.fcell label{font-size:10px;color:#888780;font-weight:500}
+.finp{font-size:12px;border:1px solid #d3d1c7;border-radius:5px;padding:4px 7px;background:#f1efe8;color:#1a1a18;outline:none;text-align:right;width:100%}
+.finp:focus{border-color:#888780;background:#fff}
+.finp.pct{text-align:center}
+.finp-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.finp-row label{font-size:11px;color:#5f5e5a;flex:1}
+.finp-row .finp{width:80px}
+.finp-row .finp.pct{width:60px}
+.funit{font-size:10px;color:#888780}
+.fresult{font-size:11px;font-weight:600;min-width:80px;text-align:right;color:#888780}
+.fresult.pos{color:#27500A}
+.subbar{display:flex;justify-content:space-between;align-items:center;padding:5px 10px;border-radius:6px;background:#f1efe8;margin:3px 0}
+.subbar.strong{background:#1a1a18}
+.subbar.strong .slbl,.subbar.strong .sval{color:#f8f7f4}
+.subbar.green{background:#EAF3DE}
+.subbar.green .slbl,.subbar.green .sval{color:#27500A}
+.subbar.blue{background:#E6F1FB}
+.subbar.blue .slbl,.subbar.blue .sval{color:#0C447C}
+.slbl{font-size:11px;font-weight:500}
+.sval{font-size:12px;font-weight:600}
+.iva-inline{display:flex;justify-content:space-between;align-items:center;padding:5px 10px;border-radius:6px;background:#f1efe8;margin:3px 0;gap:8px}
+.iva-inline select{font-size:11px;border:1px solid #d3d1c7;border-radius:4px;padding:3px 6px;background:#fff;outline:none;color:#1a1a18}
+.iva-inline .iva-val{font-size:11px;font-weight:600;color:#5f5e5a;white-space:nowrap}
+.imp-row{display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid #f8f7f4}
+.imp-row:last-child{border-bottom:none}
+.imp-lbl{font-size:10px;color:#5f5e5a;flex:1}
+.imp-res{font-size:11px;font-weight:500;color:#5f5e5a;min-width:70px;text-align:right}
+.add-prod-btn{font-size:11px;color:#5f5e5a;border:1px dashed #b4b2a9;background:transparent;border-radius:6px;padding:6px 14px;cursor:pointer;font-family:inherit}
+.add-prod-btn:hover{background:#f1efe8}
+.add-prod-btn:disabled{opacity:0.4;cursor:not-allowed}
+.prod-counter{font-size:10px;color:#888780}
+.proy-config{background:#fff;border:1px solid #d3d1c7;border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.proy-config h3{font-size:11px;font-weight:600;margin-bottom:8px;color:#1a1a18}
+.mode-sw{display:flex;gap:4px;background:#f1efe8;border-radius:6px;padding:3px;margin-bottom:8px;width:fit-content}
+.mode-btn{padding:4px 12px;font-size:11px;font-weight:500;border-radius:4px;border:none;background:transparent;color:#5f5e5a;cursor:pointer;font-family:inherit}
+.mode-btn.active{background:#fff;color:#1a1a18;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.pref-lbl{font-size:10px;color:#888780}
+.meses-wrap{overflow-x:auto;margin-bottom:8px}
+.mes-table{border-collapse:collapse;font-size:10px;min-width:600px;width:100%}
+.mes-table th{font-size:9px;font-weight:500;color:#888780;padding:3px 4px;border-bottom:1px solid #d3d1c7;text-align:center;white-space:nowrap;min-width:65px}
+.mes-table th.lft{text-align:left;min-width:110px}
+.mes-table td{padding:3px 4px;border-bottom:1px solid #f8f7f4;text-align:center}
+.mes-table td.lft{text-align:left;color:#5f5e5a;font-size:10px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mes-table tr.tot-row td{background:#1a1a18;color:#f8f7f4;font-weight:600;font-size:10px;border-top:1px solid #d3d1c7}
+.mes-table tr.tot-row td.lft{color:#f8f7f4}
+.minp-m{width:56px;font-size:11px;border:1px solid #d3d1c7;border-radius:3px;padding:3px 4px;background:#f1efe8;color:#1a1a18;outline:none;text-align:center;font-weight:500}
+.minp-m:focus{border-color:#888780}
+.mval-calc{font-size:9px;color:#b4b2a9;display:block;text-align:center;white-space:nowrap}
+.mval-calc.pos{color:#27500A}
+.val-row td{border-bottom:1px solid #f1efe8}
+.inp-row td{border-bottom:none;padding-bottom:1px}
+.proy-res{background:#fff;border:1px solid #d3d1c7;border-radius:8px;padding:8px 12px;margin-bottom:6px}
+.proy-res h3{font-size:10px;font-weight:600;color:#888780;margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px}
+.proy-sum-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid #f8f7f4;font-size:11px}
+.proy-sum-row:last-child{border-bottom:none}
+.cmp-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:6px}
+.cmp-table th{font-size:9px;font-weight:600;color:#888780;text-align:left;padding:4px 8px;border-bottom:1px solid #d3d1c7;text-transform:uppercase;letter-spacing:.3px}
+.cmp-table th.r{text-align:right}
+.cmp-table td{padding:4px 8px;border-bottom:1px solid #f1efe8;font-size:11px}
+.cmp-table tr:last-child td{border-bottom:none}
+.cmp-table td.r{text-align:right;font-weight:500;color:#27500A}
+.cmp-table td.dim{color:#888780;font-size:10px;text-align:right}
+.empty-state{text-align:center;padding:24px;color:#888780;font-size:12px;background:#fff;border:1px dashed #d3d1c7;border-radius:8px}
+.btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:1.2rem;padding-top:0.8rem;border-top:1px solid #d3d1c7;align-items:center}
+button{padding:6px 11px;font-size:11px;border-radius:6px;border:1px solid #b4b2a9;background:#fff;color:#1a1a18;cursor:pointer;font-family:inherit}
+button:hover{background:#f1efe8}
+.pri{background:#1a1a18!important;color:#f8f7f4!important;border-color:#1a1a18!important}
+.pri:hover{background:#3a3a38!important}
+.danger{color:#A32D2D!important;border-color:#f0c0c0!important;margin-left:auto}
+.ssmsg{font-size:10px;color:#888780}
+.footer{margin-top:1.5rem;font-size:10px;color:#b4b2a9;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="hdr">
+  <div>
+    <h1>Venta y gastos</h1>
+    <p class="sub">Hasta 20 productos — venta proyectada — gastos proyectados vs. reales</p>
+    <input id="empNombre" type="text" placeholder="Nombre de la empresa" oninput="autoSave()" style="margin-top:5px">
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+    <div class="logo-box" id="logoBox">
+      <img id="logoImg" alt="logo">
+      <span class="lhint" id="lhint">+ Logo</span>
+      <input type="file" accept="image/*" onchange="loadLogo(this)">
+    </div>
+    <span id="lremove" onclick="removeLogo()">✕ quitar logo</span>
+  </div>
+</div>
+<div class="tabs">
+  <button class="tab active" onclick="setTab('precio')">Venta</button>
+  <button class="tab" onclick="setTab('proyeccion')">Proyección de ventas</button>
+  <button class="tab" onclick="setTab('gastos')">Gastos</button>
+  <button class="tab" onclick="setTab('consolidado')">Consolidado</button>
+  <button class="tab" onclick="setTab('evolucion')">Evolución</button>
+</div>
+
+<!-- PANEL PRODUCTOS -->
+<div class="panel active" id="panel-precio">
+  <div id="prod-list" class="prod-list"></div>
+  <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+    <button class="add-prod-btn" id="btn-add" onclick="addProducto()">+ Agregar producto / servicio</button>
+    <span class="prod-counter" id="prod-counter"></span>
+  </div>
+  <div id="cmp-wrap" style="display:none;margin-top:14px;background:#fff;border:1px solid #d3d1c7;border-radius:8px;padding:10px 12px">
+    <div style="font-size:10px;font-weight:600;color:#888780;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px">Resumen comparativo</div>
+    <table class="cmp-table">
+      <thead><tr><th>Producto</th><th class="r">Costo directo</th><th class="r">Costo total</th><th class="r">S/IVA</th><th class="r">Precio final</th><th class="r">Margen</th></tr></thead>
+      <tbody id="cmp-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PANEL PROYECCIÓN -->
+<div class="panel" id="panel-proyeccion">
+  <div class="proy-config">
+    <h3>Modo de proyección</h3>
+    <div class="mode-sw">
+      <button class="mode-btn active" id="mbtn-uni" onclick="setMode('unitario')">Por unidades vendidas</button>
+      <button class="mode-btn" id="mbtn-pct" onclick="setMode('porcentaje')">Por % de cobro</button>
+    </div>
+    <p class="pref-lbl" id="mode-hint">Ingresá la cantidad de unidades vendidas por mes para cada producto.</p>
+  </div>
+  <div class="meses-wrap">
+    <table class="mes-table">
+      <thead id="mes-thead"></thead>
+      <tbody id="mes-tbody"></tbody>
+    </table>
+  </div>
+  <div class="proy-res" style="margin-bottom:8px">
+    <h3>Desglose por rubros — consolidado mensual</h3>
+    <div class="meses-wrap" style="margin-bottom:0">
+      <table class="mes-table" id="desglose-table">
+        <thead id="desglose-thead"></thead>
+        <tbody id="desglose-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="proy-res">
+    <h3>Resumen proyección anual</h3>
+    <div id="proy-resumen"></div>
+  </div>
+</div>
+
+<!-- PANEL GASTOS -->
+<div class="panel" id="panel-gastos">
+  <div class="subtabs">
+    <button class="subtab active" id="sbtn-proj" onclick="setSubTab('proj')">Gastos proyectados</button>
+    <button class="subtab" id="sbtn-real" onclick="setSubTab('real')">Gastos reales</button>
+  </div>
+
+  <!-- SUB: PROYECTADOS -->
+  <div class="subpanel active" id="sub-proj">
+    <div class="proy-config">
+      <h3>Gasto proyectado</h3>
+      <p class="pref-lbl">Se calcula automáticamente a partir de la proyección de ventas, descontando amortizaciones y beneficio de cada rubro. Reflejá las salidas de caja estimadas mes a mes. Si un rubro tiene una dinámica distinta a la venta (por ej. mano de obra que hay que tener disponible antes de facturar), marcalo como <b>Manual</b> y cargá el monto real que vas a necesitar cada mes.</p>
+    </div>
+    <div class="meses-wrap">
+      <table class="mes-table" id="gproj-table">
+        <thead id="gproj-thead"></thead>
+        <tbody id="gproj-tbody"></tbody>
+      </table>
+    </div>
+    <div class="proy-res">
+      <h3>Resumen anual — gasto proyectado</h3>
+      <div id="gproj-resumen"></div>
+    </div>
+  </div>
+
+  <!-- SUB: REALES -->
+  <div class="subpanel" id="sub-real">
+    <div class="proy-config">
+      <h3>Gasto real</h3>
+      <p class="pref-lbl">Completá manualmente lo efectivamente gastado en cada rubro, mes a mes.</p>
+    </div>
+    <div class="meses-wrap">
+      <table class="mes-table" id="greal-table">
+        <thead id="greal-thead"></thead>
+        <tbody id="greal-tbody"></tbody>
+      </table>
+    </div>
+    <div class="proy-res">
+      <h3>Resumen anual — gasto real</h3>
+      <div id="greal-resumen"></div>
+    </div>
+  </div>
+
+  <!-- COMPARACIÓN -->
+  <div class="proy-res">
+    <h3>Comparación proyectado vs. real</h3>
+    <div class="meses-wrap" style="margin-bottom:0">
+      <table class="cmp-table" id="gcmp-table">
+        <thead><tr><th>Rubro</th><th class="r">Proyectado (anual)</th><th class="r">Real (anual)</th><th class="r">Diferencia</th></tr></thead>
+        <tbody id="gcmp-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL CONSOLIDADO -->
+<div class="panel" id="panel-consolidado">
+  <div class="subtabs">
+    <button class="subtab" id="sbtn-consproy" onclick="setSubTabCons('proy')">Consolidado proyectado</button>
+    <button class="subtab active" id="sbtn-consreal" onclick="setSubTabCons('real')">Consolidado real</button>
+  </div>
+
+  <!-- SUB: CONSOLIDADO PROYECTADO -->
+  <div class="subpanel" id="subcons-proy">
+    <div class="proy-config">
+      <h3>Ventas proyectadas</h3>
+      <p class="pref-lbl">Se toma automáticamente de la proyección de ventas. Mismo cálculo que el real, pero con datos proyectados.</p>
+    </div>
+    <div class="meses-wrap">
+      <table class="mes-table" id="consproy-table">
+        <thead id="consproy-thead"></thead>
+        <tbody id="consproy-tbody"></tbody>
+      </table>
+    </div>
+    <div class="proy-res">
+      <h3>Resumen anual — proyectado</h3>
+      <div id="consproy-resumen"></div>
+    </div>
+  </div>
+
+  <!-- SUB: CONSOLIDADO REAL -->
+  <div class="subpanel active" id="subcons-real">
+    <div class="proy-config">
+      <h3>Ingresos reales</h3>
+      <p class="pref-lbl">Ingresá lo efectivamente facturado/cobrado cada mes. El resto se calcula solo.</p>
+    </div>
+    <div class="meses-wrap">
+      <table class="mes-table" id="cons-table">
+        <thead id="cons-thead"></thead>
+        <tbody id="cons-tbody"></tbody>
+      </table>
+    </div>
+    <div class="proy-res">
+      <h3>Resumen anual — real</h3>
+      <div id="cons-resumen"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL EVOLUCIÓN -->
+<div class="panel" id="panel-evolucion">
+  <div class="proy-config">
+    <h3>Evolución del % de cada rubro sobre ingresos</h3>
+    <p class="pref-lbl">Compara, mes a mes, el % real que representó cada rubro sobre los ingresos reales contra el % objetivo definido al armar el precio. Requiere ingresos reales, gastos reales y al menos un producto con precio calculado.</p>
+  </div>
+  <div class="proy-res">
+    <canvas id="evo-chart" height="110"></canvas>
+  </div>
+  <div class="proy-res">
+    <h3>Detalle por rubro y mes (% real vs. objetivo)</h3>
+    <div class="meses-wrap" style="margin-bottom:0">
+      <table class="mes-table" id="evo-table">
+        <thead id="evo-thead"></thead>
+        <tbody id="evo-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="btns">
+  <button class="pri" onclick="guardar()">↓ Guardar</button>
+  <button onclick="backup()">↗ Backup</button>
+  <button onclick="document.getElementById('rInp').click()">↑ Recuperar</button>
+  <button onclick="descargarPDF()">↓ PDF</button>
+  <button class="danger" onclick="limpiar()">↺ Limpiar</button>
+  <input type="file" id="rInp" accept=".json" style="display:none" onchange="recuperar(this)">
+  <span class="ssmsg" id="ssmsg"></span>
+</div>
+<div class="footer">Herramienta de circulación libre · Prohibida su comercialización - Cr. Córdoba Marcos</div>
+</div>
+
+<script>
+const SK='evolucion_v1';
+const MESES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+let MODE='unitario';
+let productos=[];
+let nextId=1;
+
+function defCostos(){return{amort:0,amort_dif:0,psvc:[0,0,0],pins:[0,0,0],pbk:[0,0],mdo_s:0,mdo_c:0,mdo_o:0,gdir_f:0,gdir_co:0,gdir_se:0,gdir_sg:0,gdir_su:0,gdir_ot:0,pct_gi:0,pct_b:0,pct_gan:0,pct_iibb:0,pct_cd:0,mono:0,mono_u:1,iva:21};}
+
+function calcPrecioProducto(c){
+  const amort_costo=c.amort||0;
+  const amort_dif=c.amort_dif||0;
+  const amort=amort_costo+amort_dif;
+  const psvc=(c.psvc||[0,0,0]).reduce((a,b)=>a+b,0);
+  const pins=(c.pins||[0,0,0]).reduce((a,b)=>a+b,0);
+  const pbk=(c.pbk||[0,0]).reduce((a,b)=>a+b,0);
+  const mdo=(c.mdo_s||0)+(c.mdo_c||0)+(c.mdo_o||0);
+  const gdir=(c.gdir_f||0)+(c.gdir_co||0)+(c.gdir_se||0)+(c.gdir_sg||0)+(c.gdir_su||0)+(c.gdir_ot||0);
+  const cd=amort+psvc+pins+pbk+mdo+gdir;
+  const gi=cd*((c.pct_gi||0)/100);
+  const ct=cd+gi;
+  const benef=ct*((c.pct_b||0)/100);
+  const cai=ct+benef;
+  const rGan=benef*((c.pct_gan||0)/100);
+  const pIIBB=(c.pct_iibb||0)/100;
+  const pCD=(c.pct_cd||0)/100;
+  const mono=(c.mono||0)/((c.mono_u||1));
+  const denom=1-pIIBB-pCD;
+  const cf=denom>0?(cai+rGan+mono)/denom:(cai+rGan+mono);
+  const rIIBB=cf*pIIBB;const rCD=cf*pCD;
+  const totImp=rGan+rIIBB+rCD+mono;
+  const iva=cf*((c.iva||0)/100);
+  const pf=cf+iva;
+  const pfr=Math.ceil(pf/100)*100;
+  return{amort,amort_costo,amort_dif,psvc,pins,pbk,mdo,gdir,cd,gi,ct,benef,cai,rGan,rIIBB,rCD,totImp,cf,iva,pf,pfr,mono};
+}
+
+function fmt(n){return n>0?'$'+Math.round(n).toLocaleString('es-AR'):'—';}
+function fmtSigned(n){if(n===0)return'—';const s=n<0?'-':'';return s+'$'+Math.round(Math.abs(n)).toLocaleString('es-AR');}
+function pv(v){return parseFloat((v||'').toString().replace(/\./g,'').replace(',','.'))||0;}
+function fmtInp(n){return(n&&n>0)?Math.round(n).toLocaleString('es-AR'):'';}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');}
+
+function togSub(pid,sec){
+  const body=document.getElementById('p'+pid+'_body_'+sec);
+  const arr=document.getElementById('p'+pid+'_arr_'+sec);
+  if(body)body.classList.toggle('open');
+  if(arr)arr.classList.toggle('open');
+}
+function toggleCard(pid){
+  const p=productos.find(x=>x.id===pid);if(!p)return;
+  p.open=!p.open;
+  document.getElementById('pbody-'+pid).classList.toggle('open',p.open);
+  document.getElementById('parr-'+pid).classList.toggle('open',p.open);
+}
+
+function cardHTML(p,idx){
+  const c=p.costos;
+  const r=calcPrecioProducto(c);
+  const K=p.id;
+  return `<div class="prod-card" id="card-${K}">
+  <div class="prod-card-hd" onclick="toggleCard(${K})">
+    <span class="prod-num">${idx+1}</span>
+    <input class="prod-name-inp" type="text" placeholder="Nombre del producto/servicio" value="${esc(p.nombre)}" data-idx="${idx}" onclick="event.stopPropagation()" oninput="productos[${idx}].nombre=this.value;renderResumenCmp();renderProy();autoSave()">
+    <span class="prod-pf" id="ppf-${K}">${r.pf>0?fmt(r.pf):'—'}</span>
+    <button class="prod-del" onclick="event.stopPropagation();delProducto(${K})">✕</button>
+    <span class="prod-arr ${p.open?'open':''}" id="parr-${K}">▼</span>
+  </div>
+  <div class="prod-body ${p.open?'open':''}" id="pbody-${K}">
+    <!-- AMORTIZACIONES -->
+    <div class="acord">
+      <div class="acord-hd" onclick="togSub(${K},'amort')">
+        <span class="acord-badge bt">Amortizaciones</span><span class="acord-title">Bienes de uso</span>
+        <span class="acord-tot" id="p${K}_tot_amort">${fmt((c.amort||0)+(c.amort_dif||0))}</span>
+        <span class="acord-arr" id="p${K}_arr_amort">▼</span>
+      </div>
+      <div class="acord-body" id="p${K}_body_amort">
+        <div class="finp-row">
+          <label>Importe mensual según costo</label>
+          <input class="finp" type="text" inputmode="numeric" placeholder="0" value="${fmtInp(c.amort)}" onchange="setCosto(${K},'amort',this)" onblur="bfmt(this)" onfocus="ffmt(this)" style="width:120px">
+        </div>
+        <div class="finp-row">
+          <label>Importe mensual diferencia hasta alquiler <span style="color:#888780;font-size:9px">(no implica desembolso)</span></label>
+          <input class="finp" type="text" inputmode="numeric" placeholder="0" value="${fmtInp(c.amort_dif)}" onchange="setCosto(${K},'amort_dif',this)" onblur="bfmt(this)" onfocus="ffmt(this)" style="width:120px">
+        </div>
+      </div>
+    </div>
+    <!-- PROVEEDORES -->
+    <div class="acord">
+      <div class="acord-hd" onclick="togSub(${K},'prov')">
+        <span class="acord-badge bp">Proveedores</span><span class="acord-title">Servicios · Insumos · Capital</span>
+        <span class="acord-tot" id="p${K}_tot_prov">${fmt((c.psvc||[0,0,0]).reduce((a,b)=>a+b,0)+(c.pins||[0,0,0]).reduce((a,b)=>a+b,0)+(c.pbk||[0,0]).reduce((a,b)=>a+b,0))}</span>
+        <span class="acord-arr" id="p${K}_arr_prov">▼</span>
+      </div>
+      <div class="acord-body" id="p${K}_body_prov">
+        <div class="grid2" style="margin-bottom:6px">
+          ${[0,1,2].map(i=>`<div class="fcell"><label>Servicio ${i+1}</label><input class="finp" type="text" inputmode="numeric" placeholder="0" value="${fmtInp((c.psvc||[])[i])}" onchange="setCosto(${K},'psvc_${i}',this)" onblur="bfmt(this)" onfocus="ffmt(this)"></div>`).join('')}
+          ${[0,1,2].map(i=>`<div class="fcell"><label>Insumo ${i+1}</label><input class="finp" type="text" inputmode="numeric" placeholder="0" value="${fmtInp((c.pins||[])[i])}" onchange="setCosto(${K},'pins_${i}',this)" onblur="bfmt(this)" onfocus="ffmt(this)"></div>`).join('')}
+          ${[0,1].map(i=>`<div class="fcell"><label>Capital cuota ${i+1}</label><input class="finp" type="text" inputmode="numeric" placeholder="0" value="${fmtInp((c.pbk||[])[i])}" onchange="setCosto(${K},'pbk_${i}',this)" onblur="bfmt(this)" onfocus="ffmt(this)"></div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <!-- MANO DE OBRA -->
+    <div class="acord">
+      <div class="acord-hd" onclick="togSub(${K},'mdo')">
+        <span class="acord-badge bm">Mano de obra</span><span class="acord-title">MO directa y cargas sociales</span>
+        <span class="acord-tot" id="p${K}_tot_mdo">${fmt(r.mdo)}</span>
+        <span class="acord-arr" id="p${K}_arr_mdo">▼</span>
+      </div>
+      <div class="acord-body" id="p${K}_body_mdo">
+        <div class="grid3">
+          <div class="fcell"><label>Sueldos netos</label><input class="finp" type="text" inputmode="numeric" placeholder="0" value="${fmtInp(c.mdo_s)}" onchange="setCosto(${K},'mdo_s',this)" onblur="bfmt(this)" onfocus="ffmt(this)"></div>
+          <div class="fcell"><label>Cargas sociales</label><input class="finp" type="text" inputmode="numeric" placeholder="0" value="${fmtInp(c.mdo_c)}" onchange="setCosto(${K},'mdo_c',this)" onblur="bfmt(this)" onfocus="ffmt(this)"></div>
+          <div class="fcell"><label>SAC / vacaciones</label><input class="finp" type="text" inputmode="numeric" placeholder="0" value="${fmtInp(c.mdo_o)}" onchange="setCosto(${K},'mdo_o',this)" onblur="bfmt(this)" onfocus="ffmt(this)"></div>
+        </div>
+      </div>
+    </div>
+    <!-- GASTOS DIRECTOS -->
+    <div class="acord">
+      <div class="acord-hd" onclick="togSub(${K},'gdir')">
+        <span class="acord-badge bg">Gs. directos</span><span class="acord-title">Gastos directos de producción</span>
+        <span class="acord-tot" id="p${K}_tot_gdir">${fmt(r.gdir)}</span>
+        <span class="acord-arr" id="p${K}_arr_gdir">▼</span>
+      </div>
+      <div class="acord-body" id="p${K}_body_gdir">
+        <div class="grid3">
+          <div class="fcell"><label>Fletes</label><input class="finp" type="text" inputmode="numeric" placeholder="0" value="${fmtInp(c.gdir_f)}" onchange="setCosto(${K},'gdir_f',this)" onblur="bfmt(this)" onfocus="ffmt(this)"></div>
+          <div class="fcell"><label>Combustible</label><input class="finp" type="text" inputmode="numeric" placeholder="0" value="${fmtInp(c.gdir_co)}" onchange="setCosto(${K},'gdir_co',this)" onblur="bfmt(this)" onfocus="ffmt(this)"></div>
+          <div class="fcell"><label>Servicios básicos</label><input class="finp" type="text" inputmode="numeric" placeholder="0" value="${fmtInp(c.gdir_se)}" onchange="setCosto(${K},'gdir_se',this)" onblur="bfmt(this)" onfocus="ffmt(this)"></div>
+          <div class="fcell"><label>Seguros directos</label><input class="finp" type="text" inputmode="numeric" placeholder="0" value="${fmtInp(c.gdir_sg)}" onchange="setCosto(${K},'gdir_sg',this)" onblur="bfmt(this)" onfocus="ffmt(this)"></div>
+          <div class="fcell"><label>Supervisión</label><input class="finp" type="text" inputmode="numeric" placeholder="0" value="${fmtInp(c.gdir_su)}" onchange="setCosto(${K},'gdir_su',this)" onblur="bfmt(this)" onfocus="ffmt(this)"></div>
+          <div class="fcell"><label>Otros directos</label><input class="finp" type="text" inputmode="numeric" placeholder="0" value="${fmtInp(c.gdir_ot)}" onchange="setCosto(${K},'gdir_ot',this)" onblur="bfmt(this)" onfocus="ffmt(this)"></div>
+        </div>
+      </div>
+    </div>
+    <div class="subbar" style="margin:4px 0"><span class="slbl">= Costo directo</span><span class="sval" id="p${K}_cd">${fmt(r.cd)}</span></div>
+    <!-- INDIRECTOS -->
+    <div class="acord">
+      <div class="acord-hd" onclick="togSub(${K},'gi')">
+        <span class="acord-badge bi">Indirectos</span><span class="acord-title">Gastos indirectos</span>
+        <span class="acord-tot" id="p${K}_tot_gi">${fmt(r.gi)}</span>
+        <span class="acord-arr" id="p${K}_arr_gi">▼</span>
+      </div>
+      <div class="acord-body" id="p${K}_body_gi">
+        <div class="finp-row">
+          <label>% s/costo directo</label>
+          <input class="finp pct" type="text" inputmode="decimal" placeholder="0" value="${c.pct_gi||''}" oninput="setCostoRaw(${K},'pct_gi',this.value)">
+          <span class="funit">%</span><span class="fresult pos" id="p${K}_res_gi">${fmt(r.gi)}</span>
+        </div>
+      </div>
+    </div>
+    <div class="subbar" style="margin:4px 0"><span class="slbl">= Costo total</span><span class="sval" id="p${K}_ct">${fmt(r.ct)}</span></div>
+    <!-- BENEFICIO -->
+    <div class="acord">
+      <div class="acord-hd" onclick="togSub(${K},'benef')">
+        <span class="acord-badge bt">Beneficio</span><span class="acord-title">Margen de beneficio</span>
+        <span class="acord-tot" id="p${K}_tot_benef">${fmt(r.benef)}</span>
+        <span class="acord-arr" id="p${K}_arr_benef">▼</span>
+      </div>
+      <div class="acord-body" id="p${K}_body_benef">
+        <div class="finp-row">
+          <label>% s/costo total</label>
+          <input class="finp pct" type="text" inputmode="decimal" placeholder="0" value="${c.pct_b||''}" oninput="setCostoRaw(${K},'pct_b',this.value)">
+          <span class="funit">%</span><span class="fresult pos" id="p${K}_res_benef">${fmt(r.benef)}</span>
+        </div>
+      </div>
+    </div>
+    <div class="subbar" style="margin:4px 0"><span class="slbl">= Costo antes impuestos</span><span class="sval" id="p${K}_cai">${fmt(r.cai)}</span></div>
+    <!-- IMPUESTOS -->
+    <div class="acord">
+      <div class="acord-hd" onclick="togSub(${K},'imp')">
+        <span class="acord-badge bi">Impuestos</span><span class="acord-title">Cargas impositivas</span>
+        <span class="acord-tot" id="p${K}_tot_imp">${fmt(r.totImp)}</span>
+        <span class="acord-arr" id="p${K}_arr_imp">▼</span>
+      </div>
+      <div class="acord-body" id="p${K}_body_imp">
+        <div class="grid2" style="margin-bottom:8px">
+          <div class="fcell"><label>Ganancias (%)</label>
+            <div style="display:flex;gap:4px;align-items:center"><input class="finp pct" type="text" inputmode="decimal" placeholder="0" value="${c.pct_gan||''}" oninput="setCostoRaw(${K},'pct_gan',this.value)" style="flex:1"><span class="funit">%</span></div>
+          </div>
+          <div class="fcell"><label>Ingresos brutos (%)</label>
+            <div style="display:flex;gap:4px;align-items:center"><input class="finp pct" type="text" inputmode="decimal" placeholder="0" value="${c.pct_iibb||''}" oninput="setCostoRaw(${K},'pct_iibb',this.value)" style="flex:1"><span class="funit">%</span></div>
+          </div>
+          <div class="fcell"><label>Créd. y déb. (%)</label>
+            <div style="display:flex;gap:4px;align-items:center"><input class="finp pct" type="text" inputmode="decimal" placeholder="0" value="${c.pct_cd||''}" oninput="setCostoRaw(${K},'pct_cd',this.value)" style="flex:1"><span class="funit">%</span></div>
+          </div>
+          <div class="fcell"><label>Monotributo ($/mes)</label>
+            <input class="finp" type="text" inputmode="numeric" placeholder="0" value="${fmtInp(c.mono)}" onchange="setCosto(${K},'mono',this)" onblur="bfmt(this)" onfocus="ffmt(this)">
+            <div style="display:flex;align-items:center;gap:4px;margin-top:3px">
+              <span style="font-size:9px;color:#888780;flex:1">÷ unidades/mes</span>
+              <input class="finp" type="text" inputmode="numeric" placeholder="1" value="${c.mono_u>1?c.mono_u:''}" oninput="setCostoRaw(${K},'mono_u',this.value||'1')" style="width:55px;font-size:11px">
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;font-size:10px;padding-top:5px;border-top:1px solid #f1efe8">
+          <div class="imp-row"><span class="imp-lbl">Ganancias</span><span class="imp-res" id="p${K}_res_gan">${fmt(r.rGan)}</span></div>
+          <div class="imp-row"><span class="imp-lbl">IIBB</span><span class="imp-res" id="p${K}_res_iibb">${fmt(r.rIIBB)}</span></div>
+          <div class="imp-row"><span class="imp-lbl">C&amp;D</span><span class="imp-res" id="p${K}_res_cd2">${fmt(r.rCD)}</span></div>
+          <div class="imp-row"><span class="imp-lbl">Monotributo</span><span class="imp-res" id="p${K}_res_mono">${fmt(r.mono)}</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="subbar strong" style="margin:4px 0"><span class="slbl">= Costo final (sin IVA)</span><span class="sval" id="p${K}_cf">${fmt(r.cf)}</span></div>
+    <div class="iva-inline">
+      <span class="slbl">IVA</span>
+      <select onchange="setCostoRaw(${K},'iva',this.value)">
+        <option value="21" ${(c.iva||21)==21?'selected':''}>21% — general</option>
+        <option value="10.5" ${(c.iva||21)==10.5?'selected':''}>10,5% — reducida</option>
+        <option value="27" ${(c.iva||21)==27?'selected':''}>27% — servicios públicos</option>
+        <option value="0" ${(c.iva||21)==0?'selected':''}>0% — exento / mono</option>
+      </select>
+      <span class="iva-val" id="p${K}_iva">${fmt(r.iva)}</span>
+    </div>
+    <div class="subbar green" style="margin:4px 0"><span class="slbl">PRECIO FINAL (con IVA)</span><span class="sval" id="p${K}_pf">${fmt(r.pf)}</span></div>
+    <div class="subbar blue" style="margin:3px 0"><span class="slbl">Precio sugerido (redondeado)</span><span class="sval" id="p${K}_pfr">${fmt(r.pfr)}</span></div>
+  </div>
+</div>`;
+}
+
+function si(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+
+function updPrecioCard(K){
+  const p=productos.find(x=>x.id===K);if(!p)return;
+  const r=calcPrecioProducto(p.costos);
+  const c=p.costos;
+  si('ppf-'+K,r.pf>0?fmt(r.pf):'—');
+  si('p'+K+'_tot_amort',fmt((c.amort||0)+(c.amort_dif||0)));
+  si('p'+K+'_tot_prov',fmt((c.psvc||[]).reduce((a,b)=>a+b,0)+(c.pins||[]).reduce((a,b)=>a+b,0)+(c.pbk||[]).reduce((a,b)=>a+b,0)));
+  si('p'+K+'_tot_mdo',fmt(r.mdo)); si('p'+K+'_tot_gdir',fmt(r.gdir));
+  si('p'+K+'_cd',fmt(r.cd)); si('p'+K+'_res_gi',fmt(r.gi)); si('p'+K+'_tot_gi',fmt(r.gi));
+  si('p'+K+'_ct',fmt(r.ct)); si('p'+K+'_res_benef',fmt(r.benef)); si('p'+K+'_tot_benef',fmt(r.benef));
+  si('p'+K+'_cai',fmt(r.cai)); si('p'+K+'_res_gan',fmt(r.rGan)); si('p'+K+'_res_iibb',fmt(r.rIIBB));
+  si('p'+K+'_res_cd2',fmt(r.rCD)); si('p'+K+'_res_mono',fmt(r.mono)); si('p'+K+'_tot_imp',fmt(r.totImp));
+  si('p'+K+'_cf',fmt(r.cf)); si('p'+K+'_iva',fmt(r.iva)); si('p'+K+'_pf',fmt(r.pf)); si('p'+K+'_pfr',fmt(r.pfr));
+}
+
+function setCosto(K,field,el){
+  const num=pv(el.value);
+  aplicarCosto(K,field,num);
+}
+function setCostoRaw(K,field,val){
+  const num=parseFloat((val||'').toString().replace(',','.'))||0;
+  aplicarCosto(K,field,num);
+}
+function aplicarCosto(K,field,num){
+  const p=productos.find(x=>x.id===K);if(!p)return;
+  const c=p.costos;
+  if(field==='amort')c.amort=num;
+  else if(field==='amort_dif')c.amort_dif=num;
+  else if(field.startsWith('psvc_'))c.psvc[+field.slice(-1)]=num;
+  else if(field.startsWith('pins_'))c.pins[+field.slice(-1)]=num;
+  else if(field.startsWith('pbk_'))c.pbk[+field.slice(-1)]=num;
+  else if(field==='mdo_s')c.mdo_s=num;
+  else if(field==='mdo_c')c.mdo_c=num;
+  else if(field==='mdo_o')c.mdo_o=num;
+  else if(field==='gdir_f')c.gdir_f=num;
+  else if(field==='gdir_co')c.gdir_co=num;
+  else if(field==='gdir_se')c.gdir_se=num;
+  else if(field==='gdir_sg')c.gdir_sg=num;
+  else if(field==='gdir_su')c.gdir_su=num;
+  else if(field==='gdir_ot')c.gdir_ot=num;
+  else if(field==='pct_gi')c.pct_gi=num;
+  else if(field==='pct_b')c.pct_b=num;
+  else if(field==='pct_gan')c.pct_gan=num;
+  else if(field==='pct_iibb')c.pct_iibb=num;
+  else if(field==='pct_cd')c.pct_cd=num;
+  else if(field==='mono')c.mono=num;
+  else if(field==='mono_u')c.mono_u=num||1;
+  else if(field==='iva')c.iva=num;
+  updPrecioCard(K);
+  renderResumenCmp();
+  renderProy();
+  autoSave();
+}
+
+function bfmt(el){const n=pv(el.value);el.value=n?Math.round(Math.abs(n)).toLocaleString('es-AR'):'';}
+function ffmt(el){const n=pv(el.value);el.value=n?String(Math.round(Math.abs(n))):'';}
+
+function renderProductos(){
+  const list=document.getElementById('prod-list');
+  if(!productos.length){
+    list.innerHTML='<div class="empty-state">Todavía no hay productos. Usá el botón para agregar el primero.</div>';
+    document.getElementById('cmp-wrap').style.display='none';
+    document.getElementById('prod-counter').textContent='';
+    document.getElementById('btn-add').disabled=false;
+    document.getElementById('btn-add').style.opacity='1';
+    return;
+  }
+  list.innerHTML=productos.map((p,idx)=>cardHTML(p,idx)).join('');
+  renderResumenCmp();
+  const n=productos.length;
+  document.getElementById('prod-counter').textContent=n+'/20 productos';
+  const btn=document.getElementById('btn-add');
+  btn.disabled=n>=10;btn.style.opacity=n>=10?'0.4':'1';
+}
+
+function renderResumenCmp(){
+  const wrap=document.getElementById('cmp-wrap');
+  const tbody=document.getElementById('cmp-body');
+  if(!productos.length){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  tbody.innerHTML=productos.map((p,idx)=>{
+    const r=calcPrecioProducto(p.costos);
+    const margen=r.pf>0?((r.benef/r.pf)*100).toFixed(1)+'%':'—';
+    return `<tr><td>${idx+1}. ${p.nombre||'(sin nombre)'}</td><td class="r">${fmt(r.cd)}</td><td class="r">${fmt(r.ct)}</td><td class="r">${fmt(r.cf)}</td><td class="r">${fmt(r.pf)}</td><td class="dim">${margen}</td></tr>`;
+  }).join('');
+}
+
+function addProducto(){
+  if(productos.length>=20){msg('Máximo 20 productos');return;}
+  productos.push({id:nextId++,nombre:'',costos:defCostos(),meses:Array(12).fill(''),open:true});
+  renderProductos();autoSave();
+  setTimeout(()=>{const cs=document.querySelectorAll('.prod-card');if(cs.length)cs[cs.length-1].scrollIntoView({behavior:'smooth',block:'nearest'});},100);
+}
+function delProducto(K){
+  if(!confirm('¿Eliminar este producto?'))return;
+  productos=productos.filter(p=>p.id!==K);
+  renderProductos();renderProy();autoSave();
+}
+
+// PROYECCIÓN
+function setMode(m){
+  MODE=m;
+  document.getElementById('mbtn-uni').classList.toggle('active',m==='unitario');
+  document.getElementById('mbtn-pct').classList.toggle('active',m==='porcentaje');
+  document.getElementById('mode-hint').textContent=m==='unitario'
+    ?'Ingresá la cantidad de unidades vendidas por mes para cada producto.'
+    :'Ingresá el % a cobrar cada mes sobre el valor total. La suma debe dar 100%.';
+  productos.forEach(p=>{p.meses=Array(12).fill('');});
+  renderProy();autoSave();
+}
+
+function valMes(p,m){
+  const raw=(p.meses[m]||'').toString().trim();if(!raw)return 0;
+  const mv=parseFloat(raw.replace(',','.'))||0;
+  const r=calcPrecioProducto(p.costos);
+  return MODE==='unitario'?mv*(r.pf||0):(r.pf||0)*mv/100;
+}
+
+function renderProy(){
+  const thead=document.getElementById('mes-thead');
+  const tbody=document.getElementById('mes-tbody');
+  if(!productos.length){
+    thead.innerHTML='';
+    tbody.innerHTML='<tr><td colspan="14" style="text-align:center;color:#888780;padding:14px;font-size:10px">Agregá productos en la pestaña anterior.</td></tr>';
+    document.getElementById('proy-resumen').innerHTML='<div style="color:#888780;font-size:11px;padding:8px 0">Sin datos.</div>';
+    return;
+  }
+  thead.innerHTML=`<tr><th class="lft">Producto</th>${MESES.map(m=>`<th>${m}</th>`).join('')}<th>Total</th></tr>`;
+  const totMeses=Array(12).fill(0);
+  const filas=productos.map((p,idx)=>{
+    let tot=0;const celdas=MESES.map((_,m)=>{const v=valMes(p,m);totMeses[m]+=v;tot+=v;return v;});
+    return{p,idx,celdas,tot};
+  });
+  const r0=tbody.querySelectorAll('tr.inp-row').length;
+  const needRebuild=r0!==productos.length||tbody.dataset.mode!==MODE;
+  tbody.dataset.mode=MODE;
+  if(needRebuild){
+    tbody.innerHTML=filas.map(({p,idx,celdas,tot})=>{
+      const r=calcPrecioProducto(p.costos);
+      const inpC=celdas.map((_,m)=>`<td><input class="minp-m" type="text" inputmode="numeric" placeholder="" value="${p.meses[m]||''}" oninput="productos[${idx}].meses[${m}]=this.value;updMes();autoSave()"></td>`).join('');
+      const valC=celdas.map((v,m)=>`<td><div class="mval-calc ${v>0?'pos':''}" data-pi="${idx}" data-m="${m}">${v>0?'$'+Math.round(v).toLocaleString('es-AR'):'—'}</div></td>`).join('');
+      return `<tr data-pi="${idx}" class="inp-row"><td class="lft" title="${p.nombre||'(sin nombre)'}">${idx+1}. ${(p.nombre||'(sin nombre)').slice(0,16)}</td>${inpC}<td rowspan="2" style="font-size:11px;font-weight:500;color:#27500A;text-align:right" class="prod-tot">${tot>0?'$'+Math.round(tot).toLocaleString('es-AR'):'—'}</td></tr>
+<tr data-pi-val="${idx}" class="val-row"><td class="lft" style="font-size:9px;color:#b4b2a9">${r.pf>0?fmt(r.pf)+'/u':''}</td>${valC}</tr>`;
+    }).join('');
+  } else {
+    filas.forEach(({idx,celdas,tot})=>{
+      celdas.forEach((v,m)=>{const sp=tbody.querySelector(`.mval-calc[data-pi="${idx}"][data-m="${m}"]`);if(sp){sp.textContent=v>0?'$'+Math.round(v).toLocaleString('es-AR'):'—';sp.className='mval-calc '+(v>0?'pos':'');}});
+      const te=tbody.querySelector(`tr[data-pi="${idx}"] .prod-tot`);if(te)te.textContent=tot>0?'$'+Math.round(tot).toLocaleString('es-AR'):'—';
+    });
+  }
+  let totRow=tbody.querySelector('.tot-row');
+  if(!totRow){totRow=document.createElement('tr');totRow.className='tot-row';tbody.appendChild(totRow);}
+  const totAnual=totMeses.reduce((a,b)=>a+b,0);
+  totRow.innerHTML=`<td class="lft">TOTAL MENSUAL</td>${totMeses.map(v=>`<td>${v>0?'$'+Math.round(v).toLocaleString('es-AR'):'—'}</td>`).join('')}<td style="text-align:right;font-weight:700">${totAnual>0?'$'+Math.round(totAnual).toLocaleString('es-AR'):'—'}</td>`;
+  renderResumen(totMeses);
+  renderDesglose();
+}
+
+function updMes(){renderProy();}
+
+function renderDesglose(){
+  const thead=document.getElementById('desglose-thead');
+  const tbody=document.getElementById('desglose-tbody');
+  if(!thead||!tbody)return;
+  if(!productos.length){thead.innerHTML='';tbody.innerHTML='';return;}
+  // rubros: por cada mes, sumar cd/gi/benef/imp/iva ponderados por unidades
+  const rubros=['Costo directo','G. indirectos','Beneficio','Impuestos','IVA','Total venta'];
+  const keys=['cd','gi','benef','totImp','iva','pf'];
+  // matriz [rubro][mes]
+  const mat=keys.map(()=>Array(12).fill(0));
+  productos.forEach(p=>{
+    const r=calcPrecioProducto(p.costos);
+    MESES.forEach((_,m)=>{
+      const raw=(p.meses[m]||'').toString().trim();if(!raw)return;
+      const unid=parseFloat(raw.replace(',','.'))||0;
+      let factor=0;
+      if(MODE==='unitario') factor=unid;
+      else factor=(r.pf>0)?unid/100:0; // % del precio
+      keys.forEach((k,ki)=>{
+        const base=r[k]||0;
+        mat[ki][m]+=MODE==='unitario'?base*factor:base*factor;
+      });
+    });
+  });
+  const totAnuales=mat.map(row=>row.reduce((a,b)=>a+b,0));
+  thead.innerHTML=`<tr><th class="lft">Rubro</th>${MESES.map(m=>'<th>'+m+'</th>').join('')}<th>Anual</th></tr>`;
+  // colores por rubro
+  const colors=['#5f5e5a','#5f5e5a','#27500A','#A32D2D','#0C447C','#1a1a18'];
+  const bolds=[false,false,false,false,false,true];
+  tbody.innerHTML=rubros.map((lbl,ri)=>{
+    const isTotal=ri===rubros.length-1;
+    const style=isTotal?'background:#1a1a18;color:#f8f7f4;font-weight:700':'';
+    const cStyle=isTotal?'color:#f8f7f4':'color:'+colors[ri]+(bolds[ri]?';font-weight:600':'');
+    return `<tr style="${style}">
+      <td class="lft" style="${isTotal?'color:#f8f7f4;font-weight:700':'color:#5f5e5a;font-size:10px'}">${lbl}</td>
+      ${mat[ri].map(v=>`<td style="${cStyle}">${v>0?'$'+Math.round(v).toLocaleString('es-AR'):'—'}</td>`).join('')}
+      <td style="${cStyle};text-align:right;font-weight:700">${totAnuales[ri]>0?'$'+Math.round(totAnuales[ri]).toLocaleString('es-AR'):'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderResumen(totMeses){
+  const el=document.getElementById('proy-resumen');if(!el)return;
+  const total=totMeses.reduce((a,b)=>a+b,0);
+  const prom=total/12;const mejor=Math.max(...totMeses);
+  const mejorMes=mejor>0?MESES[totMeses.indexOf(mejor)]:'—';
+  el.innerHTML=`
+    <div class="proy-sum-row"><span>Proyección anual total</span><span style="font-weight:500;color:${total>0?'#27500A':'#888780'}">${total>0?'$'+Math.round(total).toLocaleString('es-AR'):'—'}</span></div>
+    <div class="proy-sum-row"><span>Promedio mensual</span><span>${prom>0?'$'+Math.round(prom).toLocaleString('es-AR'):'—'}</span></div>
+    <div class="proy-sum-row"><span>Mejor mes</span><span style="color:#27500A">${mejor>0?'$'+Math.round(mejor).toLocaleString('es-AR')+' ('+mejorMes+')':'—'}</span></div>
+    <div class="proy-sum-row"><span>Productos activos</span><span>${productos.length}</span></div>`;
+}
+
+function setTab(t){
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['precio','proyeccion','gastos','consolidado','evolucion'][i]===t));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+t).classList.add('active');
+  if(t==='proyeccion')renderProy();
+  if(t==='gastos'){renderGastosProy();renderGastosReal();renderGastosCmp();}
+  if(t==='consolidado'){renderConsolidado();renderConsolidadoProy();}
+  if(t==='evolucion')renderEvolucion();
+}
+function setSubTab(t){
+  document.getElementById('sbtn-proj').classList.toggle('active',t==='proj');
+  document.getElementById('sbtn-real').classList.toggle('active',t==='real');
+  document.getElementById('sub-proj').classList.toggle('active',t==='proj');
+  document.getElementById('sub-real').classList.toggle('active',t==='real');
+}
+function setSubTabCons(t){
+  document.getElementById('sbtn-consproy').classList.toggle('active',t==='proy');
+  document.getElementById('sbtn-consreal').classList.toggle('active',t==='real');
+  document.getElementById('subcons-proy').classList.toggle('active',t==='proy');
+  document.getElementById('subcons-real').classList.toggle('active',t==='real');
+  if(t==='proy')renderConsolidadoProy();
+}
+
+// RUBROS DE GASTO (todo menos beneficio; amortizaciones y beneficio se excluyen del gasto)
+const RUBROS_GASTO=[
+  {lbl:'Servicios / insumos / capital (proveedores)',key:'prov'},
+  {lbl:'Mano de obra',key:'mdo'},
+  {lbl:'Gastos directos de producción',key:'gdir'},
+  {lbl:'Gastos indirectos',key:'gi'},
+  {lbl:'Impuestos',key:'totImp'},
+  {lbl:'IVA',key:'iva'}
+];
+
+function provTotal(r){return r.psvc+r.pins+r.pbk;}
+function rubroValor(r,key){return key==='prov'?provTotal(r):(r[key]||0);}
+
+// OVERRIDE MANUAL de gasto proyectado por rubro (para rubros que no siguen la curva de venta,
+// ej. mano de obra que hay que tener disponible antes de facturar)
+function ensureGastosProyOverride(){
+  if(!window.gastosProyOverride)window.gastosProyOverride={};
+  RUBROS_GASTO.forEach(rb=>{ if(!window.gastosProyOverride[rb.key])window.gastosProyOverride[rb.key]={manual:false,valores:Array(12).fill('')}; });
+}
+function calcMatrizGastoProyAuto(){
+  const mat=RUBROS_GASTO.map(()=>Array(12).fill(0));
+  productos.forEach(p=>{
+    const r=calcPrecioProducto(p.costos);
+    MESES.forEach((_,m)=>{
+      const raw=(p.meses[m]||'').toString().trim();if(!raw)return;
+      const unid=parseFloat(raw.replace(',','.'))||0;
+      const factor=MODE==='unitario'?unid:(r.pf>0?unid/100:0);
+      RUBROS_GASTO.forEach((rb,ri)=>{ mat[ri][m]+=rubroValor(r,rb.key)*factor; });
+    });
+  });
+  return mat;
+}
+function toggleRubroManual(key){
+  ensureGastosProyOverride();
+  const ov=window.gastosProyOverride[key];
+  ov.manual=!ov.manual;
+  if(ov.manual&&ov.valores.every(v=>!v)){
+    // al pasar a manual, precarga con los valores automáticos como punto de partida
+    const ri=RUBROS_GASTO.findIndex(rb=>rb.key===key);
+    const auto=calcMatrizGastoProyAuto()[ri];
+    ov.valores=auto.map(v=>v>0?String(Math.round(v)):'');
+  }
+  renderGastosProy();autoSave();
+}
+function setGastoProyManual(key,m,val){
+  ensureGastosProyOverride();
+  window.gastosProyOverride[key].valores[m]=val;
+  autoSave();
+}
+// Matriz [rubro][mes] de GASTO PROYECTADO = automático según venta, salvo rubros marcados como Manual
+function calcMatrizGastoProy(){
+  ensureGastosProyOverride();
+  const mat=calcMatrizGastoProyAuto();
+  RUBROS_GASTO.forEach((rb,ri)=>{
+    const ov=window.gastosProyOverride[rb.key];
+    if(ov&&ov.manual){ mat[ri]=ov.valores.map(v=>pv(v)); }
+  });
+  return mat;
+}
+function renderGastosProy(){
+  ensureGastosProyOverride();
+  const thead=document.getElementById('gproj-thead');
+  const tbody=document.getElementById('gproj-tbody');
+  if(!thead||!tbody)return;
+  if(!productos.length){
+    thead.innerHTML='';
+    tbody.innerHTML='<tr><td style="text-align:center;color:#888780;padding:14px;font-size:10px">Agregá productos y completá la proyección de ventas primero.</td></tr>';
+    document.getElementById('gproj-resumen').innerHTML='<div style="color:#888780;font-size:11px;padding:8px 0">Sin datos.</div>';
+    return;
+  }
+  const mat=calcMatrizGastoProy();
+  thead.innerHTML=`<tr><th class="lft-gproj">Rubro</th>${MESES.map(m=>`<th>${m}</th>`).join('')}<th>Anual</th></tr>`;
+  const totMeses=Array(12).fill(0);
+  let filas=RUBROS_GASTO.map((rb,ri)=>{
+    mat[ri].forEach((v,m)=>totMeses[m]+=v);
+    const anual=mat[ri].reduce((a,b)=>a+b,0);
+    const ov=window.gastosProyOverride[rb.key];
+    const esManual=ov&&ov.manual;
+    const toggleBtn=`<button type="button" class="rubro-mode-btn${esManual?' manual':''}" onclick="toggleRubroManual('${rb.key}')" title="${esManual?'Volver a cálculo automático según ventas':'Asignar manualmente, mes a mes'}">${esManual?'Manual':'Auto'}</button>`;
+    const celdas=esManual
+      ?mat[ri].map((v,m)=>`<td><input class="minp-m" type="text" inputmode="numeric" value="${ov.valores[m]||''}" oninput="setGastoProyManual('${rb.key}',${m},this.value)" onblur="bfmt(this);setGastoProyManual('${rb.key}',${m},this.value);renderGastosProy()"></td>`).join('')
+      :mat[ri].map(v=>`<td>${v>0?'$'+Math.round(v).toLocaleString('es-AR'):'—'}</td>`).join('');
+    return `<tr><td class="lft-gproj">${toggleBtn}<span>${rb.lbl}</span></td>${celdas}<td style="text-align:right;font-weight:600">${anual>0?'$'+Math.round(anual).toLocaleString('es-AR'):'—'}</td></tr>`;
+  }).join('');
+  const totAnual=totMeses.reduce((a,b)=>a+b,0);
+  filas+=`<tr class="tot-row"><td class="lft">TOTAL GASTO PROYECTADO</td>${totMeses.map(v=>`<td>${v>0?'$'+Math.round(v).toLocaleString('es-AR'):'—'}</td>`).join('')}<td style="text-align:right;font-weight:700">${totAnual>0?'$'+Math.round(totAnual).toLocaleString('es-AR'):'—'}</td></tr>`;
+  tbody.innerHTML=filas;
+  const prom=totAnual/12;
+  document.getElementById('gproj-resumen').innerHTML=`
+    <div class="proy-sum-row"><span>Gasto proyectado anual total</span><span style="font-weight:500;color:${totAnual>0?'#A32D2D':'#888780'}">${totAnual>0?'$'+Math.round(totAnual).toLocaleString('es-AR'):'—'}</span></div>
+    <div class="proy-sum-row"><span>Promedio mensual</span><span>${prom>0?'$'+Math.round(prom).toLocaleString('es-AR'):'—'}</span></div>`;
+  renderGastosCmp();
+}
+
+// GASTOS REALES — grilla editable por rubro x mes
+function ensureGastosReal(){
+  if(!window.gastosReal)window.gastosReal={};
+  RUBROS_GASTO.forEach(rb=>{ if(!window.gastosReal[rb.key])window.gastosReal[rb.key]=Array(12).fill(''); });
+}
+function setGastoReal(key,m,val){
+  ensureGastosReal();
+  window.gastosReal[key][m]=val;
+  updGastosRealTotales();
+  autoSave();
+}
+function updGastosRealTotales(){
+  const tbody=document.getElementById('greal-tbody');
+  if(!tbody)return;
+  const totMeses=Array(12).fill(0);
+  RUBROS_GASTO.forEach(rb=>{
+    const arr=window.gastosReal[rb.key];
+    let anual=0;
+    arr.forEach((v,m)=>{const n=pv(v);anual+=n;totMeses[m]+=n;});
+    const rowTot=tbody.querySelector(`tr[data-rubro="${rb.key}"] .row-tot`);
+    if(rowTot)rowTot.textContent=anual>0?'$'+Math.round(anual).toLocaleString('es-AR'):'—';
+  });
+  const totRow=tbody.querySelector('.tot-row');
+  if(totRow){
+    const tds=totRow.querySelectorAll('td');
+    totMeses.forEach((v,m)=>{ if(tds[m+1])tds[m+1].textContent=v>0?'$'+Math.round(v).toLocaleString('es-AR'):'—'; });
+    const totAnual=totMeses.reduce((a,b)=>a+b,0);
+    if(tds[13])tds[13].textContent=totAnual>0?'$'+Math.round(totAnual).toLocaleString('es-AR'):'—';
+  }
+  const totAnual=totMeses.reduce((a,b)=>a+b,0);
+  const prom=totAnual/12;
+  const resEl=document.getElementById('greal-resumen');
+  if(resEl)resEl.innerHTML=`
+    <div class="proy-sum-row"><span>Gasto real anual total</span><span style="font-weight:500;color:${totAnual>0?'#A32D2D':'#888780'}">${totAnual>0?'$'+Math.round(totAnual).toLocaleString('es-AR'):'—'}</span></div>
+    <div class="proy-sum-row"><span>Promedio mensual</span><span>${prom>0?'$'+Math.round(prom).toLocaleString('es-AR'):'—'}</span></div>`;
+}
+function renderGastosReal(){
+  ensureGastosReal();
+  const thead=document.getElementById('greal-thead');
+  const tbody=document.getElementById('greal-tbody');
+  if(!thead||!tbody)return;
+  thead.innerHTML=`<tr><th class="lft">Rubro</th>${MESES.map(m=>`<th>${m}</th>`).join('')}<th>Anual</th></tr>`;
+  const totMeses=Array(12).fill(0);
+  let filas=RUBROS_GASTO.map(rb=>{
+    const arr=window.gastosReal[rb.key];
+    let anual=0;
+    const celdas=arr.map((v,m)=>{const n=pv(v);anual+=n;totMeses[m]+=n;return `<td><input class="minp-m" type="text" inputmode="numeric" value="${v||''}" oninput="setGastoReal('${rb.key}',${m},this.value)" onblur="bfmt(this);setGastoReal('${rb.key}',${m},this.value);renderGastosCmp()"></td>`;}).join('');
+    return `<tr data-rubro="${rb.key}"><td class="lft" style="color:#5f5e5a;font-size:10px">${rb.lbl}</td>${celdas}<td class="row-tot" style="text-align:right;font-weight:600">${anual>0?'$'+Math.round(anual).toLocaleString('es-AR'):'—'}</td></tr>`;
+  }).join('');
+  const totAnual=totMeses.reduce((a,b)=>a+b,0);
+  filas+=`<tr class="tot-row"><td class="lft">TOTAL GASTO REAL</td>${totMeses.map(v=>`<td>${v>0?'$'+Math.round(v).toLocaleString('es-AR'):'—'}</td>`).join('')}<td style="text-align:right;font-weight:700">${totAnual>0?'$'+Math.round(totAnual).toLocaleString('es-AR'):'—'}</td></tr>`;
+  tbody.innerHTML=filas;
+  const prom=totAnual/12;
+  document.getElementById('greal-resumen').innerHTML=`
+    <div class="proy-sum-row"><span>Gasto real anual total</span><span style="font-weight:500;color:${totAnual>0?'#A32D2D':'#888780'}">${totAnual>0?'$'+Math.round(totAnual).toLocaleString('es-AR'):'—'}</span></div>
+    <div class="proy-sum-row"><span>Promedio mensual</span><span>${prom>0?'$'+Math.round(prom).toLocaleString('es-AR'):'—'}</span></div>`;
+}
+
+function renderGastosCmp(){
+  ensureGastosReal();
+  const tbody=document.getElementById('gcmp-body');
+  if(!tbody)return;
+  const matProy=productos.length?calcMatrizGastoProy():RUBROS_GASTO.map(()=>Array(12).fill(0));
+  let totProyAll=0,totRealAll=0;
+  let rows=RUBROS_GASTO.map((rb,ri)=>{
+    const proy=matProy[ri].reduce((a,b)=>a+b,0);
+    const real=window.gastosReal[rb.key].reduce((a,b)=>a+pv(b),0);
+    totProyAll+=proy;totRealAll+=real;
+    const dif=proy-real;
+    const cls=dif<0?'diff-pos':(dif>0?'diff-neg':'');
+    return `<tr><td>${rb.lbl}</td><td class="r">${proy>0?fmt(proy):'—'}</td><td class="r">${real>0?fmt(real):'—'}</td><td class="r ${cls}">${dif!==0?(dif>0?'+':'-')+fmt(Math.abs(dif)):'—'}</td></tr>`;
+  }).join('');
+  const difTot=totProyAll-totRealAll;
+  const clsTot=difTot<0?'diff-pos':(difTot>0?'diff-neg':'');
+  rows+=`<tr style="font-weight:700"><td>TOTAL</td><td class="r">${totProyAll>0?fmt(totProyAll):'—'}</td><td class="r">${totRealAll>0?fmt(totRealAll):'—'}</td><td class="r ${clsTot}">${difTot!==0?(difTot>0?'+':'-')+fmt(Math.abs(difTot)):'—'}</td></tr>`;
+  tbody.innerHTML=rows;
+}
+
+// ===== CONSOLIDADO =====
+function ensureIngresosReal(){
+  if(!window.ingresosReal||!Array.isArray(window.ingresosReal)||window.ingresosReal.length!==12)window.ingresosReal=Array(12).fill('');
+}
+function setIngresoReal(m,val){
+  ensureIngresosReal();
+  window.ingresosReal[m]=val;
+  renderConsolidado();
+  autoSave();
+}
+function totalGastoRealMes(m){
+  ensureGastosReal();
+  return RUBROS_GASTO.reduce((a,rb)=>a+pv(window.gastosReal[rb.key][m]),0);
+}
+// Amortización por COSTO (monto fijo, surge de la venta proyectada de cada producto).
+// Impacta siempre, haya o no ingresos reales ese mes.
+function amortizacionCostoPorMes(){
+  return MESES.map((_,m)=>{
+    let tot=0;
+    productos.forEach(p=>{
+      const c=p.costos;
+      const raw=(p.meses[m]||'').toString().trim();if(!raw)return;
+      const unid=parseFloat(raw.replace(',','.'))||0;
+      const r=calcPrecioProducto(c);
+      const factor=MODE==='unitario'?unid:(r.pf>0?unid/100:0);
+      tot+=(c.amort||0)*factor;
+    });
+    return tot;
+  });
+}
+// % de amortización por DIFERENCIA-ALQUILER sobre el precio de venta (suma amort_dif proyectada anual / suma precio c/IVA proyectado anual).
+// Este % se aplica a los ingresos (reales o proyectados) de cada mes, ya que no implica desembolso fijo sino un costo de oportunidad proporcional a lo facturado.
+function pctAmortDif(){
+  let sumDif=0,sumPfIva=0;
+  productos.forEach(p=>{
+    const r=calcPrecioProducto(p.costos);
+    MESES.forEach((_,m)=>{
+      const raw=(p.meses[m]||'').toString().trim();if(!raw)return;
+      const unid=parseFloat(raw.replace(',','.'))||0;
+      const factor=MODE==='unitario'?unid:(r.pf>0?unid/100:0);
+      sumDif+=(r.amort_dif||0)*factor;
+      sumPfIva+=r.pf*factor;
+    });
+  });
+  return sumPfIva>0?sumDif/sumPfIva:0;
+}
+// Amortización por diferencia-alquiler proyectada por mes = % aplicado a la venta proyectada de cada mes
+function amortizacionDifProyectadaPorMes(){
+  const pct=pctAmortDif();
+  const ingresos=MESES.map((_,m)=>productos.reduce((a,p)=>a+valMes(p,m),0));
+  return ingresos.map(v=>v*pct);
+}
+// Amortización según costo, ajustada por mes real: si la venta real difiere de la proyectada,
+// se escala proporcionalmente (ingreso real / ingreso proyectado de ese mes). Sin ingreso proyectado ese mes, no se imputa amortización.
+function amortizacionCostoRealPorMes(){
+  const ingresosReal=window.ingresosReal.map(v=>pv(v));
+  return MESES.map((_,m)=>{
+    const proyMes=productos.reduce((a,p)=>a+valMes(p,m),0);
+    const factor=proyMes>0?(ingresosReal[m]/proyMes):0;
+    let tot=0;
+    productos.forEach(p=>{
+      const c=p.costos;
+      const raw=(p.meses[m]||'').toString().trim();if(!raw)return;
+      const unid=parseFloat(raw.replace(',','.'))||0;
+      const r=calcPrecioProducto(c);
+      const baseFactor=MODE==='unitario'?unid:(r.pf>0?unid/100:0);
+      tot+=(c.amort||0)*baseFactor*factor;
+    });
+    return tot;
+  });
+}
+function renderConsolidado(){
+  ensureIngresosReal();ensureGastosReal();
+  const thead=document.getElementById('cons-thead');
+  const tbody=document.getElementById('cons-tbody');
+  if(!thead||!tbody)return;
+  thead.innerHTML=`<tr><th class="lft">Concepto</th>${MESES.map(m=>`<th>${m}</th>`).join('')}<th>Anual</th></tr>`;
+
+  const ingresos=window.ingresosReal.map(v=>pv(v));
+  const gastos=MESES.map((_,m)=>totalGastoRealMes(m));
+  const resOp=MESES.map((_,m)=>ingresos[m]-gastos[m]);
+  const amortCosto=amortizacionCostoRealPorMes();
+  const pctDif=pctAmortDif();
+  const amortDif=ingresos.map(v=>v*pctDif); // % sobre ingresos reales del mes — informativo, premio al riesgo, no se descuenta
+  const rent=MESES.map((_,m)=>resOp[m]-amortCosto[m]);
+
+  const sum=arr=>arr.reduce((a,b)=>a+b,0);
+  const rowIng=`<tr class="inp-row"><td class="lft">Ingresos reales</td>${ingresos.map((v,m)=>`<td><input class="minp-m" type="text" inputmode="numeric" value="${window.ingresosReal[m]||''}" oninput="window.ingresosReal[${m}]=this.value;autoSave();" onblur="bfmt(this);setIngresoReal(${m},this.value)"></td>`).join('')}<td style="text-align:right;font-weight:600">${sum(ingresos)>0?fmt(sum(ingresos)):'—'}</td></tr>`;
+  const rowGas=`<tr><td class="lft" style="color:#5f5e5a">Gastos reales</td>${gastos.map(v=>`<td>${v>0?fmt(v):'—'}</td>`).join('')}<td style="text-align:right;font-weight:600">${sum(gastos)>0?fmt(sum(gastos)):'—'}</td></tr>`;
+  const rowResOp=`<tr class="tot-row"><td class="lft">RESULTADO OPERATIVO</td>${resOp.map(v=>`<td>${fmtSigned(v)}</td>`).join('')}<td style="text-align:right;font-weight:700">${fmtSigned(sum(resOp))}</td></tr>`;
+  const rowAmortCosto=`<tr><td class="lft" style="color:#5f5e5a">Amortización según costo (ajustada a venta real)</td>${amortCosto.map(v=>`<td>${v>0?fmt(v):'—'}</td>`).join('')}<td style="text-align:right;font-weight:600">${sum(amortCosto)>0?fmt(sum(amortCosto)):'—'}</td></tr>`;
+  const rowRent=`<tr class="tot-row" style="background:#27500A"><td class="lft">RENTABILIDAD ($)</td>${rent.map(v=>`<td>${fmtSigned(v)}</td>`).join('')}<td style="text-align:right;font-weight:700">${fmtSigned(sum(rent))}</td></tr>`;
+  const rowAmortDif=`<tr><td class="lft" style="color:#888780;font-style:italic">Amortización diferencia-alquiler (${(pctDif*100).toFixed(2)}% s/ingresos) — premio al riesgo, no se descuenta</td>${amortDif.map(v=>`<td style="color:#888780">${v>0?fmt(v):'—'}</td>`).join('')}<td style="text-align:right;font-weight:600;color:#888780">${sum(amortDif)>0?fmt(sum(amortDif)):'—'}</td></tr>`;
+
+  tbody.innerHTML=rowIng+rowGas+rowResOp+rowAmortCosto+rowRent+rowAmortDif;
+
+  const totIng=sum(ingresos),totRent=sum(rent);
+  const margen=totIng>0?(totRent/totIng*100):0;
+  document.getElementById('cons-resumen').innerHTML=`
+    <div class="proy-sum-row"><span>Ingresos reales anuales</span><span style="font-weight:500">${totIng>0?fmt(totIng):'—'}</span></div>
+    <div class="proy-sum-row"><span>Resultado operativo anual</span><span>${fmtSigned(sum(resOp))}</span></div>
+    <div class="proy-sum-row"><span>Amortización según costo (anual)</span><span>${sum(amortCosto)>0?fmt(sum(amortCosto)):'—'}</span></div>
+    <div class="proy-sum-row"><span>Rentabilidad anual</span><span style="font-weight:600;color:${totRent>=0?'#27500A':'#A32D2D'}">${fmtSigned(totRent)}</span></div>
+    <div class="proy-sum-row"><span>Margen de rentabilidad</span><span>${totIng>0?margen.toFixed(1)+'%':'—'}</span></div>
+    <div class="proy-sum-row" style="color:#888780;font-size:10px"><span>Incl. premio al riesgo (dif.-alquiler)</span><span>${fmtSigned(sum(amortDif))}</span></div>`;
+}
+
+// Consolidado PROYECTADO: ventas proyectadas, gasto proyectado, amortizaciones proyectadas (directas, sin %)
+function renderConsolidadoProy(){
+  const thead=document.getElementById('consproy-thead');
+  const tbody=document.getElementById('consproy-tbody');
+  if(!thead||!tbody)return;
+  thead.innerHTML=`<tr><th class="lft">Concepto</th>${MESES.map(m=>`<th>${m}</th>`).join('')}<th>Anual</th></tr>`;
+
+  if(!productos.length){
+    tbody.innerHTML='<tr><td style="text-align:center;color:#888780;padding:14px;font-size:10px" colspan="14">Agregá productos y completá la proyección de ventas primero.</td></tr>';
+    document.getElementById('consproy-resumen').innerHTML='<div style="color:#888780;font-size:11px;padding:8px 0">Sin datos.</div>';
+    return;
+  }
+
+  // Ventas proyectadas por mes (todos los productos)
+  const ingresos=MESES.map((_,m)=>productos.reduce((a,p)=>a+valMes(p,m),0));
+  // Gasto proyectado por mes (usa la misma matriz que la solapa Gastos)
+  const matGasto=calcMatrizGastoProy();
+  const gastos=MESES.map((_,m)=>RUBROS_GASTO.reduce((a,_rb,ri)=>a+matGasto[ri][m],0));
+  const resOp=MESES.map((_,m)=>ingresos[m]-gastos[m]);
+  const amortCosto=amortizacionCostoPorMes();
+  const amortDif=amortizacionDifProyectadaPorMes();
+  const pctDif=pctAmortDif();
+  const rent=MESES.map((_,m)=>resOp[m]-amortCosto[m]);
+
+  const sum=arr=>arr.reduce((a,b)=>a+b,0);
+  const rowIng=`<tr><td class="lft">Ventas proyectadas</td>${ingresos.map(v=>`<td>${v>0?fmt(v):'—'}</td>`).join('')}<td style="text-align:right;font-weight:600">${sum(ingresos)>0?fmt(sum(ingresos)):'—'}</td></tr>`;
+  const rowGas=`<tr><td class="lft" style="color:#5f5e5a">Gasto proyectado</td>${gastos.map(v=>`<td>${v>0?fmt(v):'—'}</td>`).join('')}<td style="text-align:right;font-weight:600">${sum(gastos)>0?fmt(sum(gastos)):'—'}</td></tr>`;
+  const rowResOp=`<tr class="tot-row"><td class="lft">RESULTADO OPERATIVO</td>${resOp.map(v=>`<td>${fmtSigned(v)}</td>`).join('')}<td style="text-align:right;font-weight:700">${fmtSigned(sum(resOp))}</td></tr>`;
+  const rowAmortCosto=`<tr><td class="lft" style="color:#5f5e5a">Amortización según costo (fija)</td>${amortCosto.map(v=>`<td>${v>0?fmt(v):'—'}</td>`).join('')}<td style="text-align:right;font-weight:600">${sum(amortCosto)>0?fmt(sum(amortCosto)):'—'}</td></tr>`;
+  const rowRent=`<tr class="tot-row" style="background:#27500A"><td class="lft">RENTABILIDAD ($)</td>${rent.map(v=>`<td>${fmtSigned(v)}</td>`).join('')}<td style="text-align:right;font-weight:700">${fmtSigned(sum(rent))}</td></tr>`;
+  const rowAmortDif=`<tr><td class="lft" style="color:#888780;font-style:italic">Amortización diferencia-alquiler (${(pctDif*100).toFixed(2)}% s/ventas) — premio al riesgo, no se descuenta</td>${amortDif.map(v=>`<td style="color:#888780">${v>0?fmt(v):'—'}</td>`).join('')}<td style="text-align:right;font-weight:600;color:#888780">${sum(amortDif)>0?fmt(sum(amortDif)):'—'}</td></tr>`;
+
+  tbody.innerHTML=rowIng+rowGas+rowResOp+rowAmortCosto+rowRent+rowAmortDif;
+
+  const totIng=sum(ingresos),totRent=sum(rent);
+  const margen=totIng>0?(totRent/totIng*100):0;
+  document.getElementById('consproy-resumen').innerHTML=`
+    <div class="proy-sum-row"><span>Ventas proyectadas anuales</span><span style="font-weight:500">${totIng>0?fmt(totIng):'—'}</span></div>
+    <div class="proy-sum-row"><span>Resultado operativo anual</span><span>${fmtSigned(sum(resOp))}</span></div>
+    <div class="proy-sum-row"><span>Amortización según costo (anual)</span><span>${sum(amortCosto)>0?fmt(sum(amortCosto)):'—'}</span></div>
+    <div class="proy-sum-row"><span>Rentabilidad anual</span><span style="font-weight:600;color:${totRent>=0?'#27500A':'#A32D2D'}">${fmtSigned(totRent)}</span></div>
+    <div class="proy-sum-row"><span>Margen de rentabilidad</span><span>${totIng>0?margen.toFixed(1)+'%':'—'}</span></div>
+    <div class="proy-sum-row" style="color:#888780;font-size:10px"><span>Incl. premio al riesgo (dif.-alquiler)</span><span>${fmtSigned(sum(amortDif))}</span></div>`;
+}
+
+// PERSISTENCIA
+function getSnap(){
+  const img=document.getElementById('logoImg');
+  ensureGastosReal();ensureIngresosReal();ensureGastosProyOverride();
+  return{v:3,emp:document.getElementById('empNombre').value,logo:img.style.display!=='none'?img.src:null,mode:MODE,productos:productos.map(p=>({...p})),nextId,gastosReal:window.gastosReal,ingresosReal:window.ingresosReal,gastosProyOverride:window.gastosProyOverride};
+}
+function applySnap(snap){
+  if(!snap||snap.v!==3)return false;
+  document.getElementById('empNombre').value=snap.emp||'';
+  if(snap.logo){const img=document.getElementById('logoImg');img.src=snap.logo;img.style.display='block';document.getElementById('lhint').style.display='none';document.getElementById('lremove').style.display='inline';}
+  MODE=snap.mode||'unitario';
+  document.getElementById('mbtn-uni').classList.toggle('active',MODE==='unitario');
+  document.getElementById('mbtn-pct').classList.toggle('active',MODE==='porcentaje');
+  productos=snap.productos||[];
+  nextId=snap.nextId||productos.reduce((mx,p)=>Math.max(mx,p.id||0),0)+1;
+  window.gastosReal=snap.gastosReal||{};
+  window.ingresosReal=snap.ingresosReal||Array(12).fill('');
+  window.gastosProyOverride=snap.gastosProyOverride||{};
+  ensureGastosReal();ensureIngresosReal();ensureGastosProyOverride();
+  renderProductos();renderProy();
+  return true;
+}
+function guardar(){try{localStorage.setItem(SK,JSON.stringify(getSnap()));msg('Guardado ✓');}catch(e){msg('Error');}}
+function autoSave(){try{localStorage.setItem(SK,JSON.stringify(getSnap()));}catch(e){}}
+function backup(){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(getSnap(),null,2)],{type:'application/json'}));
+  a.download='backup_precio_'+(document.getElementById('empNombre').value||'empresa').replace(/\s+/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();msg('Backup descargado ✓');
+}
+function recuperar(inp){
+  const f=inp.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=e=>{try{const s=JSON.parse(e.target.result);applySnap(s);localStorage.setItem(SK,JSON.stringify(s));msg('Recuperado ✓');}catch(ex){msg('Archivo inválido');}};
+  rd.readAsText(f);inp.value='';
+}
+function limpiar(){
+  if(!confirm('¿Limpiar todos los datos?'))return;
+  productos=[];nextId=1;MODE='unitario';window.gastosReal={};window.ingresosReal=Array(12).fill('');window.gastosProyOverride={};
+  document.getElementById('empNombre').value='';
+  removeLogo();renderProductos();renderProy();autoSave();msg('Limpiado ✓');
+}
+function msg(t){const e=document.getElementById('ssmsg');e.textContent=t;setTimeout(()=>e.textContent='',3000);}
+function loadLogo(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=ev=>setLogo(ev.target.result);rd.readAsDataURL(f);}
+function setLogo(src){const img=document.getElementById('logoImg');img.src=src;img.style.display='block';document.getElementById('lhint').style.display='none';document.getElementById('lremove').style.display='inline';autoSave();}
+function removeLogo(){const img=document.getElementById('logoImg');if(!img)return;img.src='';img.style.display='none';const h=document.getElementById('lhint');if(h)h.style.display='';const lr=document.getElementById('lremove');if(lr)lr.style.display='none';autoSave();}
+
+// PDF
+function descargarPDF(){
+  const esP=document.getElementById('panel-precio').classList.contains('active');
+  if(esP)descargarPDFPrecios();else descargarPDFProy();
+}
+function descargarPDFPrecios(){
+  msg('Generando PDF...');
+  function build(){
+    const{jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'portrait',unit:'pt',format:'a4'});
+    const W=doc.internal.pageSize.getWidth(),M=36;
+    const emp=document.getElementById('empNombre').value||'Empresa';
+    doc.setFontSize(13);doc.setFont('helvetica','bold');doc.setTextColor(26,26,24);doc.text(emp,M,38);
+    doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(136,135,128);doc.text('Resumen de precios por producto',M,50);
+    doc.setDrawColor(211,209,199);doc.setLineWidth(0.5);doc.line(M,56,W-M,56);
+    let y=66;
+    productos.forEach((p,idx)=>{
+      const r=calcPrecioProducto(p.costos);
+      const nom=(idx+1)+'. '+(p.nombre||'(sin nombre)');
+      doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(26,26,24);doc.text(nom,M,y);
+      doc.autoTable({body:[['Costo directo',fmt(r.cd)],['Gastos indirectos',fmt(r.gi)],['= Costo total',fmt(r.ct)],['Beneficio',fmt(r.benef)],['Impuestos',fmt(r.totImp)],['= Sin IVA',fmt(r.cf)],['IVA',fmt(r.iva)],['PRECIO FINAL',fmt(r.pf)],['Precio sugerido',fmt(r.pfr)]],
+        startY:y+4,margin:{left:M,right:M},styles:{fontSize:8,cellPadding:3},
+        columnStyles:{0:{cellWidth:220,textColor:[90,90,88]},1:{halign:'right',fontStyle:'bold',textColor:[26,26,24]}},
+        theme:'plain',tableLineColor:[241,239,232],tableLineWidth:0.5,
+        didParseCell:d=>{if(d.section==='body'&&d.row.index===7){d.cell.styles.fillColor=[26,26,24];d.cell.styles.textColor=[248,247,244];}else if(d.section==='body'&&(d.row.index===2||d.row.index===5)){d.cell.styles.fillColor=[241,239,232];d.cell.styles.fontStyle='bold';}}
+      });
+      y=doc.lastAutoTable.finalY+14;
+      if(y>720&&idx<productos.length-1){doc.addPage();y=36;}
+    });
+    doc.setFontSize(7);doc.setTextColor(180,178,169);doc.text('Herramienta de circulación libre · Prohibida su comercialización - Cr. Córdoba Marcos',M,doc.internal.pageSize.getHeight()-20);
+    doc.save('precios_'+emp.replace(/\s+/g,'_')+'.pdf');msg('PDF descargado ✓');
+  }
+  loadPDFLibs(build);
+}
+function calcMatrizDesglose(){
+  const keys=['cd','gi','benef','totImp','iva','pf'];
+  const mat=keys.map(()=>Array(12).fill(0));
+  productos.forEach(p=>{
+    const r=calcPrecioProducto(p.costos);
+    MESES.forEach((_,m)=>{
+      const raw=(p.meses[m]||'').toString().trim();if(!raw)return;
+      const unid=parseFloat(raw.replace(',','.'))||0;
+      const factor=MODE==='unitario'?unid:(r.pf>0?unid/100:0);
+      keys.forEach((k,ki)=>{ mat[ki][m]+=r[k]*factor; });
+    });
+  });
+  return mat;
+}
+
+function descargarPDFProy(){
+  msg('Generando PDF...');
+  function build(){
+    const{jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
+    const W=doc.internal.pageSize.getWidth(),M=24;
+    const emp=document.getElementById('empNombre').value||'Empresa';
+    doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(26,26,24);doc.text(emp,M,32);
+    doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(136,135,128);doc.text('Proyección de ventas consolidada',M,44);
+
+    // --- Tabla 1: por producto ---
+    const head=[['Producto',...MESES,'Total']];
+    const body=[];const totMeses=Array(12).fill(0);
+    productos.forEach((p,idx)=>{
+      let totP=0;const row=[(idx+1)+'. '+(p.nombre||'(sin nombre)')];
+      MESES.forEach((_,m)=>{const v=valMes(p,m);totMeses[m]+=v;totP+=v;row.push(v>0?'$'+Math.round(v).toLocaleString('es-AR'):'—');});
+      row.push(totP>0?'$'+Math.round(totP).toLocaleString('es-AR'):'—');
+      body.push(row);
+    });
+    body.push(['TOTAL',...totMeses.map(v=>v>0?'$'+Math.round(v).toLocaleString('es-AR'):'—'),'$'+Math.round(totMeses.reduce((a,b)=>a+b,0)).toLocaleString('es-AR')]);
+    doc.autoTable({head,body,startY:54,margin:{left:M,right:M},
+      styles:{fontSize:7,cellPadding:2.5,halign:'center'},
+      headStyles:{fillColor:[26,26,24],textColor:248,fontStyle:'bold',fontSize:7},
+      columnStyles:{0:{cellWidth:90,halign:'left',fontStyle:'bold'}},
+      didParseCell:d=>{if(d.section==='body'&&d.row.index===body.length-1){d.cell.styles.fillColor=[26,26,24];d.cell.styles.textColor=[248,247,244];d.cell.styles.fontStyle='bold';}},
+      tableLineColor:[211,209,199],tableLineWidth:0.3});
+
+    // --- Tabla 2: desglose por rubros ---
+    const rubrosLbl=['Costo directo','G. indirectos','Beneficio','Impuestos','IVA','Total venta'];
+    const mat=calcMatrizDesglose();
+    const headD=[['Rubro',...MESES,'Anual']];
+    const bodyD=mat.map((row,ri)=>{
+      const anual=row.reduce((a,b)=>a+b,0);
+      return[rubrosLbl[ri],...row.map(v=>v>0?'$'+Math.round(v).toLocaleString('es-AR'):'—'),anual>0?'$'+Math.round(anual).toLocaleString('es-AR'):'—'];
+    });
+    const fy1=doc.lastAutoTable.finalY+12;
+    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(136,135,128);
+    doc.text('DESGLOSE POR RUBROS',M,fy1);
+    doc.autoTable({head:headD,body:bodyD,startY:fy1+6,margin:{left:M,right:M},
+      styles:{fontSize:7,cellPadding:2.5,halign:'center'},
+      headStyles:{fillColor:[90,90,88],textColor:248,fontStyle:'bold',fontSize:7},
+      columnStyles:{0:{cellWidth:90,halign:'left',fontStyle:'bold'}},
+      didParseCell:d=>{if(d.section==='body'&&d.row.index===bodyD.length-1){d.cell.styles.fillColor=[26,26,24];d.cell.styles.textColor=[248,247,244];d.cell.styles.fontStyle='bold';}},
+      tableLineColor:[211,209,199],tableLineWidth:0.3});
+
+    // --- Resumen anual ---
+    const totAnual=totMeses.reduce((a,b)=>a+b,0);
+    const fy2=doc.lastAutoTable.finalY+12;
+    doc.autoTable({body:[['Proyección anual total','$'+Math.round(totAnual).toLocaleString('es-AR')],['Promedio mensual','$'+Math.round(totAnual/12).toLocaleString('es-AR')],['Mejor mes','$'+Math.round(Math.max(...totMeses)).toLocaleString('es-AR')]],
+      startY:fy2,margin:{left:M,right:M},tableWidth:240,styles:{fontSize:8,cellPadding:3},
+      columnStyles:{0:{cellWidth:160},1:{cellWidth:80,halign:'right',fontStyle:'bold'}},
+      theme:'plain',tableLineColor:[211,209,199],tableLineWidth:0.3});
+
+    doc.setFontSize(7);doc.setTextColor(180,178,169);doc.text('Herramienta de circulación libre · Prohibida su comercialización - Cr. Córdoba Marcos',M,doc.internal.pageSize.getHeight()-14);
+    doc.save('proyeccion_'+emp.replace(/\s+/g,'_')+'.pdf');msg('PDF descargado ✓');
+  }
+  loadPDFLibs(build);
+}
+function loadPDFLibs(cb){
+  if(window.jspdf&&window.jspdf.jsPDF&&typeof window.jspdf.jsPDF.prototype.autoTable!=='undefined'){cb();return;}
+  const s1=document.createElement('script');s1.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+  s1.onload=()=>{const s2=document.createElement('script');s2.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js';s2.onload=cb;s2.onerror=()=>msg('Error autoTable');document.head.appendChild(s2);};
+  s1.onerror=()=>msg('Error jsPDF');document.head.appendChild(s1);
+}
+function loadChartLib(cb){
+  if(window.Chart){cb();return;}
+  const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
+  s.onload=cb;s.onerror=()=>msg('Error cargando gráfico');
+  document.head.appendChild(s);
+}
+
+// % OBJETIVO de cada rubro = (suma rubro proyectado anual) / (suma precio con IVA proyectado anual)
+// misma base que el % real (gasto real / ingresos reales), para que sean comparables
+function pctsObjetivoRubros(){
+  const sumRubro=RUBROS_GASTO.map(()=>0);
+  let sumPfIva=0;
+  productos.forEach(p=>{
+    const r=calcPrecioProducto(p.costos);
+    MESES.forEach((_,m)=>{
+      const raw=(p.meses[m]||'').toString().trim();if(!raw)return;
+      const unid=parseFloat(raw.replace(',','.'))||0;
+      const factor=MODE==='unitario'?unid:(r.pf>0?unid/100:0);
+      RUBROS_GASTO.forEach((rb,ri)=>{ sumRubro[ri]+=rubroValor(r,rb.key)*factor; });
+      sumPfIva+=r.pf*factor;
+    });
+  });
+  return RUBROS_GASTO.map((rb,ri)=>sumPfIva>0?sumRubro[ri]/sumPfIva:0);
+}
+
+const EVO_COLORS=['#0C447C','#27500A','#633806','#3C3489','#085041','#A32D2D'];
+
+function renderEvolucion(){
+  ensureGastosReal();ensureIngresosReal();
+  const thead=document.getElementById('evo-thead');
+  const tbody=document.getElementById('evo-tbody');
+  if(!thead||!tbody)return;
+
+  if(!productos.length){
+    thead.innerHTML='';
+    tbody.innerHTML='<tr><td style="text-align:center;color:#888780;padding:14px;font-size:10px">Agregá productos con precio calculado primero.</td></tr>';
+    return;
+  }
+
+  const pctObj=pctsObjetivoRubros();
+  const ingresosReales=window.ingresosReal.map(v=>pv(v));
+
+  // % real de cada rubro por mes = gasto real del rubro / ingresos reales del mes
+  const pctRealMat=RUBROS_GASTO.map((rb)=>MESES.map((_,m)=>{
+    const ing=ingresosReales[m];
+    if(!ing)return null;
+    return pv(window.gastosReal[rb.key][m])/ing;
+  }));
+
+  // Tabla detalle
+  thead.innerHTML=`<tr><th class="lft">Rubro</th>${MESES.map(m=>`<th>${m}</th>`).join('')}<th>Objetivo</th></tr>`;
+  let filas='';
+  RUBROS_GASTO.forEach((rb,ri)=>{
+    const celdas=MESES.map((_,m)=>{
+      const pr=pctRealMat[ri][m];
+      if(pr===null)return '<td>—</td>';
+      const desv=pr-pctObj[ri];
+      const cls=Math.abs(desv)<0.005?'':(desv>0?'diff-pos':'diff-neg');
+      return `<td><span class="${cls}">${(pr*100).toFixed(1)}%</span></td>`;
+    }).join('');
+    filas+=`<tr><td class="lft" style="color:#5f5e5a;font-size:10px">${rb.lbl}</td>${celdas}<td style="text-align:right;font-weight:600">${(pctObj[ri]*100).toFixed(1)}%</td></tr>`;
+  });
+  tbody.innerHTML=filas;
+
+  // Gráfico
+  loadChartLib(()=>{
+    const ctx=document.getElementById('evo-chart');
+    if(!ctx)return;
+    if(window.evoChartInstance)window.evoChartInstance.destroy();
+    const datasets=RUBROS_GASTO.map((rb,ri)=>({
+      label:rb.lbl,
+      data:pctRealMat[ri].map(v=>v===null?null:+(v*100).toFixed(2)),
+      borderColor:EVO_COLORS[ri],
+      backgroundColor:EVO_COLORS[ri],
+      borderWidth:2,
+      spanGaps:true,
+      tension:.25,
+      pointRadius:3
+    }));
+    // líneas punteadas de referencia (% objetivo) por rubro
+    RUBROS_GASTO.forEach((rb,ri)=>{
+      datasets.push({
+        label:rb.lbl+' (objetivo)',
+        data:MESES.map(()=>+(pctObj[ri]*100).toFixed(2)),
+        borderColor:EVO_COLORS[ri],
+        borderWidth:1,
+        borderDash:[4,3],
+        pointRadius:0,
+        tension:0
+      });
+    });
+    window.evoChartInstance=new Chart(ctx,{
+      type:'line',
+      data:{labels:MESES,datasets},
+      options:{
+        responsive:true,
+        interaction:{mode:'nearest',intersect:false},
+        plugins:{
+          legend:{position:'bottom',labels:{font:{size:9},boxWidth:10}},
+          tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.formattedValue}%`}}
+        },
+        scales:{
+          y:{ticks:{callback:v=>v+'%',font:{size:9}}},
+          x:{ticks:{font:{size:9}}}
+        }
+      }
+    });
+  });
+}
+
+document.addEventListener('paste',e=>{
+  const items=(e.clipboardData||e.originalEvent.clipboardData).items;
+  for(const item of items){if(item.type.startsWith('image/')){const rd=new FileReader();rd.onload=ev=>setLogo(ev.target.result);rd.readAsDataURL(item.getAsFile());break;}}
+});
+try{const r=localStorage.getItem(SK);if(r){const ok=applySnap(JSON.parse(r));if(!ok)renderProductos();}else renderProductos();}catch(e){renderProductos();}
+</script>
+</body>
+</html>
